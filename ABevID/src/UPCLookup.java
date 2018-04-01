@@ -15,6 +15,7 @@ public class UPCLookup extends scanner{
 
 	private URLConnection uNutritionix = null;
 	protected Map<Integer, Object> values = new HashMap<Integer,Object>();
+	
 	// Default constructor
 	public UPCLookup(){
 		
@@ -36,24 +37,19 @@ public class UPCLookup extends scanner{
 		JSONParser jsonParser = new JSONParser();
 		JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
 		 
-        // retrieve values from stream
+		// retrieve values from stream
 		values.put(1, jsonObject.get("brand_name"));
 		values.put(2, jsonObject.get("item_name"));
 		values.put(3, jsonObject.get("nf_calories"));
 		values.put(4, jsonObject.get("nf_serving_size_qty"));
 		values.put(5, jsonObject.get("nf_serving_size_unit"));
-		values.put(6, jsonObject.get("nf_serving_weight_grams"));
-        
-        //temporary println to verify returning data  ---  to be removed
-        System.out.println(values.get(1)+" "+values.get(2));
-        System.out.println(values.get(3)+" calories");
-        System.out.println(values.get(4)+" "+values.get(5));
-        System.out.println(values.get(6)+" grams per serving");        
+		values.put(6, jsonObject.get("nf_serving_weight_grams"));       
         
 	}
 	
 	public String toString() {
-		return "";
+		return values.get(1)+" "+values.get(2)+"\nCalories: "+values.get(3)+"\nServing Size: "+values.get(4)+
+				values.get(5)+"\nServing Size in grams: "+values.get(6);
 	}
 	
 	
