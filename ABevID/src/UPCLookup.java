@@ -9,6 +9,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Retrieves nutritional information from Nutritionix based on scanned UPC label
  * @author John Moser
@@ -19,7 +22,7 @@ public class UPCLookup extends scanner{
 
 	private URLConnection uNutritionix = null;
 	private String appID,appKey;
-	protected Map<Integer, Object> values = new HashMap<Integer,Object>();
+	protected Map<String, Object> values = new HashMap<String,Object>();
 	
 	// Default constructor
 	public UPCLookup(){
@@ -27,12 +30,22 @@ public class UPCLookup extends scanner{
 	}
 	
 	
+	/**
+	 * Constructor to call API method and pass in the required UPC barcode
+	 * 
+	 * @param iUPC Barcode input from scanner
+	 * @param sKey Application Key for API
+	 * @param sID Application ID for API
+	 * @throws IOException IO Exception error
+	 * @throws ParseException Data read exception error
+	 */
 	public UPCLookup(String iUPC, String sKey, String sID) throws IOException, ParseException {
 		appID=sKey;
 		appKey=sID;
         setMap(iUPC);
 		
 	}
+	
 	
 	/**
 	 * Sets the Map of nutritional values received from the Nutritionix API
@@ -43,43 +56,50 @@ public class UPCLookup extends scanner{
 	 */
 	private void setMap(String input) throws IOException, ParseException {
 		
+		ObjectMapper map= new ObjectMapper();
+		JSONParser jsonParser = new JSONParser();
+		
 		try {
-		uNutritionix = new URL("https://api.nutritionix.com/v1_1/item?upc="+input+"&fields=item_name,upc,brand_name,item_id,nf_calories&appId="+appID+"&appKey="+appKey).openConnection();
+		uNutritionix = new URL("https://api.nutritionix.com/v1_1/item?upc="+input+"&appId="+appID+"&appKey="+appKey).openConnection();
+
+		// Parse input data stream
+		InputStream	inputStream = uNutritionix.getInputStream();
+		JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
+		
+		//convert JSON Object to JSON String
+		String sJsonObject=jsonObject.toJSONString();
+		
+
+        //convert JSON string to Map
+        values = map.readValue(sJsonObject, new TypeReference<HashMap<String, String>>() {});
+        
 		}	
 		
 		// catch IOException errors
 		catch (IOException	e)	{
-		e.printStackTrace();
+			e.printStackTrace();
 		}
 		
-		// Parse input data stream
-		InputStream	inputStream = uNutritionix.getInputStream();
-		JSONParser jsonParser = new JSONParser();
-		JSONObject jsonObject = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
-		 
-		// retrieve values from stream
-		values.put(1, jsonObject.get("brand_name"));
-		values.put(2, jsonObject.get("item_name"));
-		values.put(3, jsonObject.get("nf_calories"));
-		values.put(4, jsonObject.get("nf_serving_size_qty"));
-		values.put(5, jsonObject.get("nf_serving_size_unit"));
-		values.put(6, jsonObject.get("nf_serving_weight_grams"));
 	}
+	
 	
 	/**
 	 * Used to nutritional retrieve values stored within a Map
 	 * @return Return Map of nutritional values
 	 */
-	public Map getMap() {
+	public Map<String, Object> getMap() {
 		
 		return values;
 	}
 	
-	public String toString() {
-		return values.get(1)+" "+values.get(2)+"\nCalories: "+values.get(3)+"\nServing Size: "+values.get(4)+
-				values.get(5)+"\nServing Size in grams: "+values.get(6);
-	}
 	
+	/**
+	 * Returns string value of data returned from the API
+	 */
+	public String toString() {
+		return values.toString();
+	
+	}
 	
 	
 }

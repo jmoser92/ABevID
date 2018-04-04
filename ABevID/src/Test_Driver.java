@@ -13,13 +13,14 @@ public class Test_Driver {
 			//Enter you API ID here
 			String appID="";
 			
+			//Local_Test_Lookup test = new Local_Test_Lookup(iUPC,appID,appKey);
 			UPCLookup test = new UPCLookup(iUPC,appID,appKey);
-		
-			//Test output
-			System.out.println(test+"\n++++++++++++++++++++++++++\n");
-			
 			Map testMap= test.getMap();
-			System.out.println(testMap.get(1));
+			
+			String output=testMap.get("brand_name")+" "+testMap.get("item_name")+
+					"\nCalories: "+testMap.get("nf_calories")+
+					"\nServing Size: "+testMap.get("nf_serving_size_qty")+" " +testMap.get("nf_serving_size_unit");
+			System.out.println(output);
 		}
 
 
